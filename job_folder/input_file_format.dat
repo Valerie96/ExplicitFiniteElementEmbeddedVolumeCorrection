@@ -1,0 +1,31 @@
+Title
+Embedded Elements	1 (yes or no)
+VolumeCorrection 	1 (yes or no)
+2               #element types
+hexa8           First element types
+truss2          Second element type  (etc etc)
+10              Number of elements
+1 2 1 1 1       Node def:
+2 2 1 0 1          Node#  BoundaryCode x y z
+3 6 1 1 0             BC 8 is for embedded nodes
+4 6 1 0 0
+5 3 0 1 1
+6 3 0 0 1 
+7 7 0 1 0
+8 7 0 0 0
+9 8 1 1 0.6
+10 8 0 1 0.6
+1                       # of elements of the first type (ie 1 hexa8 element)
+1 1 0 4 3 7 8 2 1 5 6   Element #, Material #, Host(0)/Embedded(1), Connectivity
+1                       # of elements of the second type
+1 1 1 9 10              Element #, Material #, Host(0)/Embedded(1), Connectivity
+1                       # of materials assigned to the first type elements
+1 1 7800.0 76.92e9 115.4e9  Material def, see Flagshyp doc
+1                       # of materials assigned to the second type elements
+1 2 7800.0 2e11 0.3 0.5 2E6 1  Material, see Flagshyp doc
+0.01                    Sim time (if explicit)
+0 4 0 0.0 0.0 0.0              Loads, BC
+1 2 0.04
+3 2 0.04
+5 2 0.04
+7 2 0.04
