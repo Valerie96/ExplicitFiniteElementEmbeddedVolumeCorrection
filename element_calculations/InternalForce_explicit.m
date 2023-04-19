@@ -133,12 +133,13 @@ if GEOM.embedded.HostTotals(ielement,2) > 0
         if GEOM.embedded.ElementHost(eelt,2) == ielement
             node_flag(2) = 1;
         end
-        if node_flag(1) + node_flag(2) >= 1;
+        if node_flag(1) + node_flag(2) >= 1
             material_number   = MAT(2).matno(eelt);
+            matyp_e           = MAT(2).matyp(material_number);
             properties_e      = MAT(2).props(:,material_number);
             T_internal = TrussCorrectedInternalForce_explicit_from_mem(ielement,...
                            T_internal,FEM(2).mesh.connectivity,FEM(1).mesh.element_type,GEOM,PLAST,STRESS(2),...
-                           properties,properties_e,DAMPING,VolumeCorrect,eelt,node_flag);
+                           matyp,properties,matyp_e,properties_e,DAMPING,VolumeCorrect,eelt,node_flag);
         end
     end
 end

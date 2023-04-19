@@ -1,5 +1,5 @@
 %%  Volume Redundancy Guidelines: Dyneema Cube Flagshyp vs Abaqus
-cd 'C:\Users\Valerie\Documents\GitHub\ExplicitFiniteElementEmbeddedVolumeCorrection\Testing';
+cd 'C:/Users/Valerie/OneDrive - The Pennsylvania State University/Research/Projects/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/Testing';
 
 file1="VolRedGuidelines_DyneemaCube_0fibers";
 name1f = "DyneemaCube noFibers";
@@ -15,10 +15,10 @@ FLAG_3=FLAG_1; name3f=name1f;
 % name3f = "FlagshypACI-SpeedUpdate3";
 % FLAG_3 = ReadFlagshypOutputFile(file1,'jf'); 
 
-suffix = ' ';
+suffix = '';
 
-[AbqHost1, AbqETruss1, AbqE1]  = ReadAbaqus_excel(strcat("Abaqus_xlsx/DyneemaCube",suffix));
-[AbqHost2, AbqETruss2, AbqE2]  = ReadAbaqus_excel(strcat("Abaqus_xlsx/DyneemaCube_10000fibers",suffix));
+[AbqHost1, AbqETruss1, AbqE1]  = ReadAbaqus_excel(strcat("Abaqus_xlsx/DyneemaCube1",suffix));
+[AbqHost2, AbqETruss2, AbqE2]  = ReadAbaqus_excel(strcat("Abaqus_xlsx/DyneemaCube1",suffix));
 
 graphsize=[100 100 800 400];
 name1a = "Abaqus No Fibers";
@@ -30,23 +30,8 @@ PlotEnergy5([AbqE1.time, -AbqE1.WK],[AbqE2.time, -AbqE2.WK],[FLAG_1.Etime, FLAG_
 PlotEnergy5([AbqE1.time, AbqE1.ETOTAL],[AbqE2.time, AbqE2.ETOTAL], [FLAG_1.Etime, FLAG_1.ET], [FLAG_2.Etime, FLAG_2.ET],[FLAG_3.Etime, FLAG_3.ET], name1a, name2a,name1f, name2f,name3f,'Total Energy')
 
 %%
-boundnodes=[1,2,3,4,5,6,7,8,9,10,11,122,123,124,125,126 ...
-127,128,129,130,131,132,243,244,245,246,247,248,249,250,251,252 ...
-253,364,365,366,367,368,369,370,371,372,373,374,485,486,487,488 ...
-489,490,491,492,493,494,495,606,607,608,609,610,611,612,613,614 ...
-615,616,727,728,729,730,731,732,733,734,735,736,737,848,849,850 ...
-851,852,853,854,855,856,857,858,969,970,971,972,973,974,975,976 ...
-977,978,979,1090,1091,1092,1093,1094,1095,1096,1097,1098,1099,1100,1211 ...
-1212,1213,1214,1215,1216,1217,1218,1219,1220,1221];
-
-
-boundelements=[1,2,3,4,5,6,7,8,9,10,101,102,103,104,105,106 ...
-107,108,109,110,201,202,203,204,205,206,207,208,209,210,301,302 ...
-303,304,305,306,307,308,309,310,401,402,403,404,405,406,407,408 ...
-409,410,501,502,503,504,505,506,507,508,509,510,601,602,603,604 ...
-605,606,607,608,609,610,701,702,703,704,705,706,707,708,709,710 ...
-801,802,803,804,805,806,807,808,809,810,901,902,903,904,905,906 ...
-907,908,909,910];
+boundnodes=[1,  2,  3,  4, 17, 18, 19, 20, 33, 34, 35, 36, 49, 50, 51, 52];
+boundelements=[1,  2,  3, 10, 11, 12, 19, 20, 21];
 
 Abn=find(AbqHost1.nodes==boundnodes(1));
 AbRF1 = AbqHost1.RF(:,3,Abn);
@@ -64,17 +49,12 @@ end
 t0=15;
 A0=15*15;
 
-%Average center stress
-%Center elements: 405,505,406,506 Ceter node: 611
-Abq611=116;
-Abq405=find(boundelements==405);Abq505=find(boundelements==505);
-Abq406=find(boundelements==406);Abq506=find(boundelements==506);
-Ab1_S33=mean(AbqHost1.S(:,3,Abq405),AbqHost1.S(:,3,Abq505),AbqHost1.S(:,3,Abq406),AbqHost1.S(:,3,Abq506));
+Abq11=find(AbqHost1.elements==11);
 %%
 figure();
 hold on; grid on;
-plot(-AbqHost1.U(:,3,Abq611)/t0,-AbRF1/A0,'bo','DisplayName',name1a);
-plot(-FLAG_1.Disp(:,3,611)/t0,-FRF/A0,'b','DisplayName',name1f,'LineWidth',3);
+plot(-AbqHost1.U(:,3,1)/t0,-AbRF1/A0,'bo','DisplayName',name1a);
+plot(-FLAG_1.Disp(:,3,1)/t0,-FRF/A0,'b','DisplayName',name1f,'LineWidth',3);
 title(strcat("Compressive Stress vs Strain",suffix));
 xlabel("Compressive Strain (m/m)");
 ylabel("Stress (MPa)");
@@ -82,27 +62,45 @@ legend('show');
 
 figure();
 hold on; grid on;
-plot(AbqHost1.time,-AbqHost1.S(:,3,Abq405),'bo','DisplayName',name1a);
-plot(FLAG_1.time,-FLAG_1.HostS(:,3,405),'b','DisplayName',name1f,'LineWidth',3);
-title("Stress");
+plot(AbqHost1.time,-AbqHost1.LE(:,6,Abq11),'bo','DisplayName',name1a);
+plot(FLAG_1.time,-FLAG_1.HostLE(:,6,11),'b','DisplayName',name1f,'LineWidth',3);
+title("ZZ Log Strain");
 xlabel("Time (s)");
-ylabel("Stress (MPa)");
+ylabel("Log Strain)");
 legend('show');
 
 figure();
 hold on; grid on;
-plot(AbqHost1.time,-AbqHost1.RF(:,3,Abq611),'bo','DisplayName',name1a);
-plot(FLAG_1.time,-FLAG_1.RF(:,3,611),'b','DisplayName',name1f,'LineWidth',3);
-title("X Reaction Force");
+plot(AbqHost1.time,-AbqHost1.S(:,6,Abq11),'bo','DisplayName',name1a);
+plot(FLAG_1.time,-FLAG_1.HostS(:,6,11),'b','DisplayName',name1f,'LineWidth',3);
+title("ZZ Stress");
+xlabel("Time (s)");
+ylabel("Stress (MPa)");
+legend('show');
+%%
+figure();
+hold on; grid on;
+plot(AbqHost1.time,-AbqHost1.RF(:,3,1),'bo','DisplayName',name1a);
+plot(FLAG_1.time,-FLAG_1.RF(:,3,1),'b','DisplayName',name1f,'LineWidth',3);
+title("Z Reaction Force");
 xlabel("Time (s)");
 ylabel("Force (N)");
 legend('show');
 
 figure();
 hold on; grid on;
-plot(AbqHost1.time,-AbqHost1.U(:,3,Abq611),'bo','DisplayName',name1a);
-plot(FLAG_1.time,-FLAG_1.Disp(:,3,611),'b','DisplayName',name1f,'LineWidth',3);
-title(strcat("Displacement",suffix));
+plot(AbqHost1.time,-AbqHost1.U(:,1,1),'bo','DisplayName',name1a);
+plot(FLAG_1.time,-FLAG_1.Disp(:,1,1),'b','DisplayName',name1f,'LineWidth',3);
+title(strcat("X Displacement",suffix));
+xlabel("Time (s)");
+ylabel("Disp (m)");
+legend('show');
+
+figure();
+hold on; grid on;
+plot(AbqHost1.time,-AbqHost1.U(:,3,1),'bo','DisplayName',name1a);
+plot(FLAG_1.time,-FLAG_1.Disp(:,3,1),'b','DisplayName',name1f,'LineWidth',3);
+title(strcat("Z Displacement",suffix));
 xlabel("Time (s)");
 ylabel("Disp (m)");
 legend('show');

@@ -4,7 +4,8 @@
 
 function [T_internal] = TrussCorrectedInternalForce_explicit_from_mem(ielement,...
           T_internal,connectivity2,host_element_type,GEOM,PLAST,STRESS,...
-          properties_h,properties_e,DAMPING,VolumeCorrect,eelt,node_flag)
+          matyp_h,properties_h,matyp_e,properties_e,DAMPING,VolumeCorrect,eelt,node_flag)
+
 
 dim=GEOM.ndime;
 
@@ -51,9 +52,10 @@ dim=GEOM.ndime;
     properties_eh(1) = properties_h(1);
     properties_eh(2) = E_h;
     properties_eh(3) = nu_h;
+    matyp_eh = matyp_e;
 
     TE=STRESS.InternalForce(eelt,:);
-    [TC,~,~,~,~,~,~] = element_force_truss(properties_eh,xelocal,x_e,PLAST,GEOM,DAMPING,1);
+    [TC,~,~,~,~,~,~] = element_force_truss(matyp_eh,properties_eh,xelocal,x_e,PLAST,GEOM,DAMPING,1);
 
     %----------------------------------------------------------------------
     % Get embeddded element internal force and convert to force on host

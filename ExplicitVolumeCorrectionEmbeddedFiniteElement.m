@@ -1,14 +1,16 @@
 %To run, either fill out the intro to this or run command
 %ExplicitVolumeCorrectionEmbededFiniteElement(inputfile,outputfeq,vtuOn);
-
+   
 clear; clc; close all; 
-basedir_fem='C:/Users/Valerie/Documents/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/';
+basedir_fem='C:/Users/Valerie/OneDrive - The Pennsylvania State University/Research/Projects/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection';
 inputfile = 'Cube_8h_4t.dat';
-inputfile = 'SmallTension_Speed.dat';
+inputfile = 'MRTension_1h.dat';
+inputfile = 'Cube_1h_1t.dat';
+% inputfile = 'SmallTension_Speed.dat';
 % inputfile = 'RussellTensile-Half_5000Fibers7_discritized.dat'
-inputfile ='VolRedGuidelines_DyneemaCube_0fibers.dat';
+% inputfile ='VolRedGuidelines_DyneemaCube_0fibers.dat';
 
-outputfreq = 20;
+outputfreq = 1;
 vtuOn = 0;
 
 ansmlv ='y'; 
@@ -16,24 +18,27 @@ prefactor = 0.7;
 
 d1=digits(64);
 CON.OUTPUT.incout = outputfreq;
-CON.OUTPUT.nwant = 0;
-CON.OUTPUT.iwant = 1;
+CON.OUTPUT.nodeout = 1; CON.OUTPUT.eltout = [1 1]; %[mesh #, element #]
+% CON.OUTPUT.iwant = 1; CON.OUTPUT.nwant = 1;
 % parpool('local');
 tic
 %% Input_data_and_initilaization.m
-[PRO,FEM,GEOM,QUADRATURE,BC,MAT,LOAD,CONSTANT,GLOBAL,...
-   PLAST,KINEMATICS,INITIAL_KINEMATICS,STRESS,simtime,Wint,Wext,Wvdamp,...
+[PRO,CON,FEM,GEOM,QUADRATURE,BC,MAT,LOAD,CONSTANT,GLOBAL,...
+   PLAST,KINEMATICS,INITIAL_KINEMATICS,STRESS,Wint,Wext,Wvdamp,...
    EmbedElt,VolumeCorrect] = input_data_and_initialisation(basedir_fem,...
    ansmlv,inputfile,CON,vtuOn);
 
 %% ExplicitDynamics_algorithm
 %--------------------------------------------------------------------------
 % Explicit central diff. algorithm 
-% Based on Beylthereohetg Box xxx
+% Based on Belytschko Box 6.1
 %--------------------------------------------------------------------------
 
 %Artifical bulk viscosity 
 DAMPING.b1 = 0.04; %Linear bulk viscosity damping
+DAMPING.b2 = 1.2; %Quadratic bulk viscosity damping
+
+DAMPING.b1 = 0.2; %Linear bulk viscosity damping
 DAMPING.b2 = 1.2; %Quadratic bulk viscosity damping
 
 %Step 1 - Initialisation
@@ -41,14 +46,14 @@ DAMPING.b2 = 1.2; %Quadratic bulk viscosity damping
 velocities_half = zeros(FEM(1).mesh.n_dofs,1);
 disp_n = zeros(FEM(1).mesh.n_dofs,1);
 disp_prev = zeros(FEM(1).mesh.n_dofs,1);
-CON.xlamb = 1;
+CON.amp = 0;
 CON.incrm = 0; 
 
 output(PRO,CON,GEOM,FEM,BC,GLOBAL,MAT,PLAST,QUADRATURE,CONSTANT,KINEMATICS,INITIAL_KINEMATICS,STRESS,0,0);
 CON.incrm = CON.incrm + 1; 
 
 %Step 2 - Get Force
-[GLOBAL,updated_PLAST,GEOM.Jn_1,GEOM.VolRate,f_damp] = getForce_explicit(CON.xlamb,...
+[GLOBAL,updated_PLAST,GEOM.Jn_1,GEOM.VolRate,f_damp,STRESS] = getForce_explicit(CON.amp,...
           GEOM,MAT,FEM,GLOBAL,CONSTANT,QUADRATURE,PLAST,KINEMATICS,INITIAL_KINEMATICS,BC,DAMPING,STRESS,EmbedElt,VolumeCorrect,1);      
      
 %Step 3 - Compute accelerations.
@@ -56,7 +61,7 @@ GLOBAL.accelerations(BC.hostdof(:,1)) = inv(GLOBAL.M)*(GLOBAL.external_load(BC.h
 
 %Step 4 - Time update/iterations
 Time = 0; 
-tMax = simtime; % in seconds
+tMax = CON.simtime; % in seconds
 GLOBAL.tMax = tMax;
 dt = prefactor * CalculateTimeStep(FEM,GEOM,MAT,DAMPING); % in seconds
 time_step_counter = 0;
@@ -80,7 +85,10 @@ while(Time<tMax)
         dt_nphalf = dt;
         t_nphalf  = 0.5 *(t_np1 + t_n);
         fprintf('%d\n',Time);
-    end        
+    end
+
+    %Set applied load/displacement amplitude
+    CON = set_load_amp(CON,Time);
     
 % Step 5 - Update velocities
     velocities_half = GLOBAL.velocities + (t_nphalf - t_n) * GLOBAL.accelerations;
@@ -104,10 +112,9 @@ while(Time<tMax)
   %--------------------------------------------------------------------
   % Update nodal forces (excluding pressure) and gravity. 
   %--------------------------------------------------------------------
-   CON.dlamb  = t_np1/tMax;
    [GLOBAL.Residual,GLOBAL.external_load] = external_force_update_explicit ...
        (GLOBAL.nominal_external_load,...
-        GLOBAL.Residual,GLOBAL.external_load,CON.dlamb);
+        GLOBAL.Residual,GLOBAL.external_load,CON.amp);
 
     GLOBAL.external_load_effective = GLOBAL.external_load + GLOBAL.Reactions;
     
@@ -117,7 +124,7 @@ while(Time<tMax)
   %--------------------------------------------------------------------      
   if LOAD.n_pressure_loads      
      GLOBAL = pressure_load_and_stiffness_assembly(GEOM,MAT,FEM,...
-              GLOBAL,LOAD,QUADRATURE.boundary,CON.dlamb);    
+              GLOBAL,LOAD,QUADRATURE.boundary,CON.amp);    
   end
   %--------------------------------------------------------------------
   % Update applied displacements (incrementation based on a smooth ramp 
@@ -125,7 +132,7 @@ while(Time<tMax)
   %--------------------------------------------------------------------
   if  BC.n_prescribed_displacements > 0
       [GEOM.x ,velocities_half]  = update_prescribed_displacements_explicit(BC.dofprescribed,...
-               GEOM.x0,GEOM.x,velocities_half,BC.presc_displacement,t_np1,tMax); 
+               GEOM.x0,GEOM.x,velocities_half,BC.presc_displacement,dt,CON.amp); 
        disp_n(BC.fixdof) = GEOM.x(BC.fixdof) - GEOM.x0(BC.fixdof);  
   end
   %----------------------------------------------------------------
@@ -133,7 +140,7 @@ while(Time<tMax)
   %----------------------------------------------------------------
   if LOAD.n_pressure_loads
       GLOBAL = pressure_load_and_stiffness_assembly(GEOM,MAT,FEM,...
-               GLOBAL,LOAD,QUADRATURE.boundary,CON.xlamb);
+               GLOBAL,LOAD,QUADRATURE.boundary,CON.amp);
   end
   
   %--------------------------------------------------------------------       
@@ -151,7 +158,7 @@ while(Time<tMax)
   f_damp_prev = f_damp;
   
 %Step 8 - Get Force
-  [GLOBAL,updated_PLAST,GEOM.Jn_1,GEOM.VolRate,f_damp] = getForce_explicit(CON.xlamb,...
+  [GLOBAL,updated_PLAST,GEOM.Jn_1,GEOM.VolRate,f_damp,STRESS] = getForce_explicit(CON.amp,...
           GEOM,MAT,FEM,GLOBAL,CONSTANT,QUADRATURE,PLAST,KINEMATICS,INITIAL_KINEMATICS,BC,DAMPING,STRESS,EmbedElt,VolumeCorrect,dt);
 
   GLOBAL.external_load_effective = GLOBAL.external_load + GLOBAL.Reactions;

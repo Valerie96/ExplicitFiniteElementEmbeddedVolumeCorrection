@@ -10,28 +10,7 @@ switch matyp
                %elements that really shouldn't come through this function
          Cauchy = stress1(kinematics,properties,cons);
     case 3
-         Cauchy = stress3(kinematics,properties,dim);
-    case 4
-         Cauchy = stress4(kinematics,properties,dim);
-    case 5
-         Cauchy = stress5(kinematics,properties,cons,dim);
-    case 6
-         Cauchy = stress6(kinematics,properties,cons);
-    case 7
-         Cauchy = stress7(kinematics,properties,dim);
-    case 8
-         Cauchy = stress8(kinematics,properties,dim);        
-    case 17
-         %-----------------------------------------------------------------
-         % Select internal variables at a particular Gauss point (igauss)
-         % of the element.
-         %-----------------------------------------------------------------
-         PLAST_gauss.OLD.invCp = PLAST.invCp(:,:,igauss);
-         PLAST_gauss.OLD.epbar = PLAST.epbar(igauss);    
-         [Cauchy,PLAST_gauss]  = stress17(kinematics,properties,dim,...
-                                 PLAST_gauss);
-         PLAST                 = plasticity_update(PLAST_gauss.UPDATED,...
-                                 PLAST,igauss,matyp);
+         Cauchy = stress3(kinematics,properties,cons);
 end
 
 

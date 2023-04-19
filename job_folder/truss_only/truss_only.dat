@@ -1,0 +1,19 @@
+3-D EmbeddedElt
+Embedded Elements	0
+VolumeCorrection 	0
+Output: Node 1 Element 1
+1
+truss2
+2
+1 7 0.25 0 0
+2 2 0.25 0.4 0
+1
+1 1 0 1 2
+1
+1 4 1040 4.5 2.5e3 0.9091e-9 0.2
+0.01
+2
+0	0
+0.01 1
+0 1 0 0.0 0.0 0.0
+2 2 0.02

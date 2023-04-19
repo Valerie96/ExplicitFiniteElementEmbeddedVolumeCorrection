@@ -60,30 +60,25 @@ smallest_elt_length = 1E-3;
 
 NewINP = "RussellTensile-1-5-12Fibers7.inp";    %-Coarse
 % 
-% OriginalINP = "INPfiles/DyneemaDiskQuarter_thin.inp";
-% PartName = "TargetPlate";
-% OutsideNSetName = "nset=AllOutside"; 
-% 
-% NewINP = "DyneemaClampedThin_1000Fibers.inp";
-% % 
-% OriginalINP = "INPfiles/KarthikeyanPlate_cae.inp";
-% PartName = "TargetPlate";
-% OutsideNSetName = "nset=AllOutside"; 
-% 
-% NewINP = "KarthikeyanPlate_1000Fibers_singlelayer.inp";
-% 
-OriginalINP = "INPfiles/DyneemaCube.inp";
-PartName = "Cube";
-OutsideNSetName = "nset=Outside"; 
-smallest_elt_length = 1.25;
+OriginalINP = 'INPfiles/DyneemaCohesiveShot4.inp';
+PartName = "TargetPlate";
+OutsideNSetName = "nset=AllOutside"; 
+smallest_elt_length = 2E-3;
 
-NewINP = "DyneemaCube_10000fibers.inp";
+NewINP = "DyneemaCohesiveShot4-500FpT.inp"; 
+% 
+% OriginalINP = "INPfiles/DyneemaCube.inp";
+% PartName = "Cube";
+% OutsideNSetName = "nset=Outside"; 
+% smallest_elt_length = 1.25;
+% 
+% NewINP = "DyneemaCube_10000fibers.inp";
 
 %Plot part in MATLAB for diganostics
 PLOT=false;
 
 %Fiber Material (must be a material definied in Abaqus cae)
-Fmat = "DyneemaFibers";
+Fmat = "FIBERS_FAIL";
 
 %Create an all with self contact definition
 ALLSELFCONTACT=false;
@@ -94,8 +89,8 @@ meshseed = 0.0025;
 meshseed = smallest_elt_length*1.25;
 
 %Set number of points per row
-nptsx = 20;
-nptsy = 20;
+nptsx = 30;
+nptsy = 30;
 
 %Cross sectional Area of truss element
 TArea = 7.85398E-7*1000;
@@ -108,11 +103,11 @@ DBT = 0.001*5;
 %truss and have matlab calculate the rest
 %Actual Fiber size
 Fact=17E-6;
-Fact=17E-3;
+% Fact=17E-3;
 % Number of fibers per truss element
 FpT = 2500;
 FpT = 6200;
-FpT = 10000;
+FpT = 100;
 
     %Calculate Truss area
     TArea = FpT*0.25*pi()*Fact^2

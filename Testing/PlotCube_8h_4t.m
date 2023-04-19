@@ -1,5 +1,5 @@
 %% Abaqus vs Embedded Abaqus vs   Flagshyp 1 vs Flagshyp 2 vs Flagshyp 3 Energy
-cd 'C:\Users\Valerie\Documents\GitHub\ExplicitFiniteElementEmbeddedVolumeCorrection\Testing';
+cd 'C:/Users/Valerie/OneDrive - The Pennsylvania State University/Research/Projects/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/Testing';
 suffix = '';
 
 [AbqOneHost, AbqETruss, AbqEOne]  = ReadAbaqus_excel(strcat('Abaqus_xlsx/FlagshypCube_8h_0t',suffix));
@@ -107,7 +107,21 @@ title("X Displacement");
 xlabel("Time (s)");
 ylabel("Displacement (m) ");
 legend('show');
-
+%%
+figure();
+hold on; grid on;
+% fig=gcf; fig.Position=graphsize;
+plot(AbqOneHost.time,AbqOneHost.U(:,2,1),'bo','DisplayName',name1a);
+plot(AbqE.time,AbqEHost.U(:,2,1),'ro' ,'DisplayName',name2a);
+plot(FLAG_1.time,FLAG_1.Disp(:,2,1),'b','DisplayName',name1,'LineWidth',3);
+plot(FLAG_2.time,FLAG_2.Disp(:,2,1),'r','DisplayName',name2,'LineWidth',3);
+plot(FLAG_3.time,FLAG_3.Disp(:,2,1),'g','DisplayName',name3,'LineWidth',2);
+% plot(time,AnalyticDisp1,'c','DisplayName',"Analytic")
+title("Y Displacement");
+xlabel("Time (s)");
+ylabel("Displacement (m) ");
+legend('show');
+%%
 figure();
 hold on; grid on;
 % fig=gcf; fig.Position=graphsize;

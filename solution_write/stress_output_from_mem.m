@@ -7,10 +7,10 @@ switch matyp
     %----------------------------------------------------------------------
     % Obtain stress for trusses.
     %----------------------------------------------------------------------
-    case 2 
+    case {2,4} 
         DAMPING.b1 = 0; DAMPING.b2 = 0;
         PLAST.ep = 0; PLAST.epbar = 0; 
-        [~,~,~,~,stress,eps] = element_force_truss(...
+        [~,~,~,~,stress,eps] = element_force_truss(matyp,...
           properties,xlocal,x0local,PLAST,GEOM,DAMPING,1);
      
     otherwise

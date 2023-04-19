@@ -23,7 +23,10 @@ truss2          Second element type  (etc etc)
 1 1 7800.0 76.92e9 115.4e9  Material def, see Flagshyp doc
 1                       # of materials assigned to the second type elements
 1 2 7800.0 2e11 0.3 0.5 2E6 1  Material, see Flagshyp doc
-0.01                    Sim time (if explicit)
+0.01                    Sim time 
+2                       Number of rows in amplitude ramp
+0    0                  Amp row 1 (time, displacement/force amplitude)
+0.01 1                  Amp row 2
 0 4 0 0.0 0.0 0.0              Loads, BC
 1 2 0.04
 3 2 0.04

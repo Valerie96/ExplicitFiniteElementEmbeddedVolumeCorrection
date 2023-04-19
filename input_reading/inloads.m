@@ -2,9 +2,11 @@
 % Read nodal point loads, prescribed displacements, surface pressure loads
 % and gravity (details in textbook).
 %--------------------------------------------------------------------------
-function [LOAD,BC,FEM,GLOBAL,simtime] = inloads(GEOM,FEM,BC,fid)
+function [LOAD,BC,FEM,GLOBAL,CON] = inloads(GEOM,FEM,BC,CON,fid)
 
-simtime                       = sscanf(fgetl(fid),'%f');
+CON.simtime                       = sscanf(fgetl(fid),'%f');
+tablesize                     = sscanf(fgetl(fid),'%d');
+CON.ramp_table                    = fscanf(fid,'%f %f',[2,tablesize])';
 n_point_loads                 = fscanf(fid,'%d',1);             
 BC.n_prescribed_displacements = fscanf(fid,'%d',1);             
 LOAD.n_pressure_loads         = fscanf(fid,'%d',1);             

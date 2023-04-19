@@ -2,7 +2,7 @@
 % Computes and assemble residual force vector and global tangent stiffness
 % matrix except surface (line) element pressure contributions.
 %--------------------------------------------------------------------------
-function [GLOBAL,updated_PLAST,Jn_1_vec,VolRate_vec,globef_damp] = getForce_explicit(xlamb,...
+function [GLOBAL,updated_PLAST,Jn_1_vec,VolRate_vec,globef_damp,STRESS] = getForce_explicit(xlamb,...
           GEOM,MAT,FEM,GLOBAL,CONSTANT,QUADRATURE,PLAST,KINEMATICS,INITIAL_KINEMATICS,BC,DAMPING,STRESS,EmbedElt,VolumeCorrect,dt)    
 
 %Initilize internal and viscous damping forces for the current step      
@@ -16,10 +16,11 @@ if EmbedElt==1
     for ielet=1:FEM(2).mesh.nelem
         global_nodes    = FEM(2).mesh.connectivity(:,ielet);   
         material_number = MAT(2).matno(ielet);
+        matyp           = MAT(2).matyp(material_number);
         properties      = MAT(2).props(:,material_number); 
         xlocal          = GEOM.x(:,global_nodes);                     
         x0local         = GEOM.x0(:,global_nodes);  
-        [T_internal,~,~,~,Cauchy,LE, ~] = element_force_truss(...
+        [T_internal,~,~,~,Cauchy,LE, ~] = element_force_truss(matyp,...
           properties,xlocal,x0local,PLAST(1),GEOM,DAMPING,dt);
        STRESS(2).Cauchy(ielet) = Cauchy;
        STRESS(2).LE(ielet) = LE;
@@ -81,9 +82,11 @@ for ielet=1:FEM(1).mesh.nelem
         %----------------------------------------------------------------------    
         switch elt_type
           case 'truss2'
-           [T_internal,~,~,~,~,~, ~] = element_force_truss(...
+           [T_internal,~,~,~,Cauchy,epsilon,~] = element_force_truss(matyp,...
               properties,xlocal,x0local,PLAST(1),GEOM,DAMPING,dt);
             f_damp=T_internal*0;
+            elt_STRESS.Cauchy=Cauchy;
+            elt_STRESS.LE=epsilon;
             otherwise
             DN_X=DN_Xtemp{ielet,1};
             

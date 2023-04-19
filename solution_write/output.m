@@ -13,9 +13,10 @@ if (~PRO.rest && CON.incrm==0)
    string='w';
 end
 %--------------------------------------------------------------------------
-% Open file for single node output.
+% Open file for single node and element output.
 %--------------------------------------------------------------------------
-if (~isempty (CON.OUTPUT.nwant) && CON.OUTPUT.nwant~=0)
+if (~isempty (CON.OUTPUT.nodeout) && CON.OUTPUT.nodeout~=0)
+    singleout=true;
    fid_flagout = fopen(PRO.outputfile_name_flagout,string);
 end
 %--------------------------------------------------------------------------
@@ -55,6 +56,10 @@ format                    =  ['%d %d ' repmat('% -1.4E ',1,2*GEOM.ndime) '\n'];
 fprintf(fid,format,info');
 fprintf(fid,'\n');
 
+if singleout
+    NodeLoad = info(CON.OUTPUT.nodeout,:);
+end
+
 fprintf(fid,'Node#, Displacement, Velocity, Acceleration\n');
 fprintf(fid,[' ' repmat('     %s     ',1,GEOM.ndime)],'dx', 'dy', 'dz');
 fprintf(fid,['    ' repmat('     %s     ',1,GEOM.ndime)],'vx', 'vy', 'vz');
@@ -71,6 +76,10 @@ aux_a                     =  reshape(aux,GEOM.ndime,[]);
 info(:,2:end)             =  [GEOM.x'-GEOM.x0' aux_v' aux_a'];
 format                    =  ['%d ' repmat('% -1.4E ',1,GEOM.ndime) ' || ' repmat('% -1.4E ',1,GEOM.ndime) ' || ' repmat('% -1.4E ',1,GEOM.ndime) '\n'];
 fprintf(fid,format,info');
+
+if singleout
+    NodeDisp = info(CON.OUTPUT.nodeout,:);
+end
 
 fprintf(fid,'\n');
 fprintf(fid,'Element Types: %d \n',FEM(1).n_elet_type);
@@ -138,27 +147,28 @@ for i=1:FEM(1).n_elet_type
             VM = sqrt(0.5*((xx-yy)^2+(yy-zz)^2+(zz-xx)^2) + 3*(xy^2+xz^2+yz^2));
             fprintf(fid,'VM: % -1.4E \n', VM);
         end
+
+        if CON.OUTPUT.eltout(1) == i && CON.OUTPUT.eltout(2) == ielement
+            ElementStress = StressStrain;
+            ElementType = FEM(i).mesh.element_type;  
+        end
     end 
 end
 %--------------------------------------------------------------------------
 % - For node CON.OUTPUT.nwant and dof CON.OUTPUT.iwant output displacement
 %   and corresponding force (file name '...FLAGOUT.TXT').
 %--------------------------------------------------------------------------
-if (~isempty (CON.OUTPUT.nwant) && CON.OUTPUT.nwant~=0)
-    increment  = CON.incrm;   
-    coordinate = GEOM.x(CON.OUTPUT.iwant,CON.OUTPUT.nwant);
-    Force      = GLOBAL.external_load(FEM(1).mesh.dof_nodes(CON.OUTPUT.iwant,CON.OUTPUT.nwant));
-    xlamb      = CON.xlamb;
-    radius     = CON.ARCLEN.arcln;
-    format     = [repmat('% -1.4E ',1,5) '\n'];
-    fprintf(fid_flagout,format,[increment,coordinate,Force,xlamb,radius]);
+if singleout
+    output_single(NodeDisp,NodeLoad,ElementStress,ElementType,PRO,CON,time,dt,fid_flagout)
+    fclose(fid_flagout);
 end
+
 fprintf(fid,['\n' repmat('-',1,length(output_title)*2)]);
 fprintf(fid,['\n' repmat('-',1,length(output_title)*2) '\n\n']);
 fclose(fid);
-if (~isempty (CON.OUTPUT.nwant) && CON.OUTPUT.nwant~=0)
-   fclose(fid_flagout);
-end
+
+
+
 
 
 

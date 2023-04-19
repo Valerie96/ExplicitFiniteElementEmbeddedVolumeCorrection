@@ -2,18 +2,8 @@
 % Computes the element vector of global internal forces 
 %--------------------------------------------------------------------------
 function [T_internal,PLAST,geomJn_1,VolRate,Cauchy,epsilon,CauchyTensor] = element_force_truss(...
-          properties,x_local,X_local,PLAST,GEOM,DAMPING,dt)  
-      
-% rho   = properties(1);
-E     = properties(2);
-nu    = properties(3);
-area  = properties(4);
-% ty0   = properties(5);  
-% H     = properties(6);
-lam = (E*nu/((1+nu)*(1-2*nu))); mu = E/(2*(1+nu)); 
-
-% ep    = PLAST.ep;    
-% epbar = PLAST.epbar; 
+          matyp,properties,x_local,X_local,PLAST,GEOM,DAMPING,dt)  
+    
 %--------------------------------------------------------------------------
 % Temporary variables.
 %--------------------------------------------------------------------------
@@ -23,8 +13,6 @@ l       = norm(dx);
 n       = dx/l;                                                           
 lambda  = l/L;                                
 epsilon = log(lambda);
-
-J       = lambda^(1-2*nu);
 
 %Bulk Viscosity Damping
 % Jn_1=GEOM.Jn_1(ielement);
@@ -37,12 +25,53 @@ J       = lambda^(1-2*nu);
 %     
 %     p1 = rho*b1*le*Cd*eps_dot*eye(3);
 %     p2 = rho*(b2*le)^2*abs(eps_dot)*min(0,eps_dot)*eye(3);
-    
-%Explicit NeoHooke
-b = [lambda^2 0 0; 0 lambda^(-2*nu) 0; 0 0 lambda^(-2*nu)];
-s = (1/3)*(3*lam+2*mu)*(J-1)*eye(3) + mu*(J^(-5/3))*(b - (1/3)*trace(b))*eye(3);
-CauchyTensor = s;
-Cauchy = CauchyTensor(1,1);
+
+switch matyp
+    case 2
+        %Explicit NeoHooke
+        % rho   = properties(1);
+        E     = properties(2);
+        nu    = properties(3);
+        area  = properties(4);
+        % ty0   = properties(5);  
+        % H     = properties(6);
+        lam = (E*nu/((1+nu)*(1-2*nu))); mu = E/(2*(1+nu)); 
+        
+        % ep    = PLAST.ep;    
+        % epbar = PLAST.epbar; 
+
+        J       = lambda^(1-2*nu);
+        b = [lambda^2 0 0; 0 lambda^(-2*nu) 0; 0 0 lambda^(-2*nu)];
+        s = (1/3)*(3*lam+2*mu)*(J-1)*eye(3) + mu*(J^(-5/3))*(b - (1/3)*trace(b))*eye(3);
+        CauchyTensor = s;
+        Cauchy = CauchyTensor(1,1);
+
+    case 4
+        %Ogden
+        % rho   = properties(1);
+        alpha1     = properties(2);
+        mu1        = properties(3);
+        D1         = properties(4);
+        area       = properties(5);
+        K=2/D1;
+        mu = mu1*alpha1/2;
+        nu = (3*K-2*mu)/(2*(3*K+mu));
+        
+        J       = lambda^(1-2*nu);
+        %b = [lambda^2 0 0; 0 lambda^(-2*nu) 0; 0 0 lambda^(-2*nu)];
+        
+        lambda1 = lambda/J^(1/3);
+        lambda2 = (lambda^-nu)/J^(1/3);
+        lambda3 = (lambda^-nu)/J^(1/3);
+        PF1     = 2*mu1/(alpha1*J);
+        
+        sigma1 = (PF1*(lambda1^alpha1 - (lambda1^alpha1+lambda2^alpha1+lambda3^alpha1)/3) + K*(J-1));
+        sigma2 = (PF1*(lambda2^alpha1 - (lambda1^alpha1+lambda2^alpha1+lambda3^alpha1)/3) + K*(J-1));
+        sigma3 = (PF1*(lambda3^alpha1 - (lambda1^alpha1+lambda2^alpha1+lambda3^alpha1)/3) + K*(J-1));
+        CauchyTensor =[sigma1 0 0; 0 sigma2 0; 0 0 sigma3];
+        Cauchy = CauchyTensor(1,1);
+end
+
 
 %--------------------------------------------------------------------------
 %Abaqus considers trusses incompressible and therefore does not calculate

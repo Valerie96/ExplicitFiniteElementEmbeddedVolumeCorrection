@@ -1,8 +1,8 @@
 %--------------------------------------------------------------------------
 % Read input data.
 %--------------------------------------------------------------------------
-function [FEM,GEOM,QUADRATURE,BC,MAT,LOAD,PRO,GLOBAL,EmbedElt,...
-    VolumeCorrect,simtime] = reading_input_file(PRO,fid)
+function [FEM,GEOM,QUADRATURE,BC,MAT,LOAD,PRO,CON,GLOBAL,EmbedElt,...
+    VolumeCorrect] = reading_input_file(PRO,CON,fid)
 %--------------------------------------------------------------------------
 % Problem title.   
 %--------------------------------------------------------------------------
@@ -13,7 +13,13 @@ PRO.title = strtrim(fgets(fid));
 text = fgetl(fid);
 EmbedElt = sscanf(text, "Embedded Elements	%u"); 
 text = fgetl(fid);
-VolumeCorrect = sscanf(text, "VolumeCorrection	%u");        
+VolumeCorrect = sscanf(text, "VolumeCorrection	%u");    
+
+%Read node and element for individual output
+format = ['Output: Node %d Element %d'];
+info = sscanf(fgetl(fid),format,2);
+PRO.outnode  = info(1);
+PRO.outelt   = info(2);
 %--------------------------------------------------------------------------
 % Element type.    
 %--------------------------------------------------------------------------
@@ -59,6 +65,7 @@ end
 % Read nodal point loads, prescribed displacements, surface pressure loads
 % and gravity (details in textbook).
 %--------------------------------------------------------------------------
-[LOAD,BC,FEM(1),GLOBAL,simtime] = inloads(GEOM,FEM(1),BC,fid);
+[LOAD,BC,FEM(1),GLOBAL,CON] = inloads(GEOM,FEM(1),BC,CON,fid);
 %--------------------------------------------------------------------------
+
 fclose('all'); 

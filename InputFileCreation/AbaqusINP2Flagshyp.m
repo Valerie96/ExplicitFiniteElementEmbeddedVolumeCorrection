@@ -13,7 +13,11 @@
 clear; clc; close all; 
 
 OriginalINP = "DyneemaCube_10000fibers.inp";
-NewINP = "DyneemaCube_10000fibers.dat";   
+NewINP = "DyneemaCube_10000fibers.dat";  
+
+OriginalINP = "MRTension-DispSpec.inp";
+NewINP = "MRTension_1h-DispSpec.dat";  
+
 
 % OriginalINP = "RussellTensile-1-5_5000Fibers7_discritized.inp";
 % NewINP = "RussellTensile-1-5_5000Fibers7_discritized.dat";

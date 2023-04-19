@@ -22,7 +22,7 @@ PART(2)=PART(1);
         if fid < 0
             %disp('Error')
             fprintf("%s Not Found\n", OriginalINP);
-            quit;
+            return;
         else
             
         %Look for part mesh
@@ -199,6 +199,7 @@ PART(2)=PART(1);
 %                         tline = fgetl(fid);
                         ELSET(n_Elset).elements = fscanf(fid, "%u%*c ",[1, inf]);
                     end
+                elseif contains(tline,"Surface")
                 else
                     fprintf('wtf ReadAbaqusInputFile.m, line 203, not Nset or Elset\n');
                 end
@@ -262,10 +263,14 @@ PART(2)=PART(1);
             STEP.lineardamp = sscanf(tline, "%f %*c %*f");
             STEP.quaddamp = sscanf(tline, "%*f %*c %f");
 
-            %Read Step Boundary Conditions
+            %Read Step Boundary Conditions (if there is one)
             while ~contains(tline, "** BOUNDARY CONDITIONS")
                 tline = fgetl(fid);
+                if tline==-1
+                    return;
+                end
             end
+            
             for i=1:2
                 tline = fgetl(fid);
             end

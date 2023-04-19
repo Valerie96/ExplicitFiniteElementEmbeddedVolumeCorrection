@@ -24,15 +24,15 @@ end
 %--------------------------------------------------------------------------
 % Compute the number of nearly incompressible elements in the domain.
 %--------------------------------------------------------------------------
-n_nearly_incompressible = 0;  
-for ielement=1:FEM.mesh.nelem
-    material_number = MAT.matno(ielement);     
-    matyp = MAT.matyp(material_number);        
-     if matyp==5 || matyp==7 || matyp==17
-        n_nearly_incompressible = n_nearly_incompressible + 1;
-     end    
-end
-MAT.n_nearly_incompressible = n_nearly_incompressible;
+% n_nearly_incompressible = 0;  
+% for ielement=1:FEM.mesh.nelem
+%     material_number = MAT.matno(ielement);     
+%     matyp = MAT.matyp(material_number);        
+%      if matyp==5 || matyp==7 || matyp==17
+%         n_nearly_incompressible = n_nearly_incompressible + 1;
+%      end    
+% end
+% MAT.n_nearly_incompressible = n_nearly_incompressible;
 %--------------------------------------------------------------------------
 % Obtain number of material properties for a given material type.
 %--------------------------------------------------------------------------
@@ -40,10 +40,10 @@ function  property_numbers    = material_choice(matyp)
     switch matyp
         case 2
              property_numbers = (1:6);
-        case 4
+        case 3
              property_numbers = (1:4);
-        case 17
-             property_numbers = (1:5);
+        case 4 
+            property_numbers = (1:5);
         otherwise
              property_numbers = (1:3);
     end

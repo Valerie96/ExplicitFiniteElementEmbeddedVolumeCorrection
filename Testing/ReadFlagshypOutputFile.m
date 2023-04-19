@@ -1,10 +1,10 @@
 function [FLAG] = ReadFlagshypOutputFile(name,folder)
 
 if strcmp(folder,"jf")
-    basedir=strcat('C:/Users/Valerie/Documents/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/job_folder/',name);
+    basedir=strcat('C:/Users/Valerie/OneDrive - The Pennsylvania State University/Research/Projects/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/job_folder/',name);
     file = strcat(basedir,'/', name, '-OUTPUT.txt');
 else
-    basedir=strcat('C:/Users/Valerie/Documents/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/',folder,'/',name);  %basedir=strcat(pwd,'\', folder)
+    basedir=strcat('C:/Users/Valerie/OneDrive - The Pennsylvania State University/Research/Projects/GitHub/ExplicitFiniteElementEmbeddedVolumeCorrection/',folder,'/',name);  %basedir=strcat(pwd,'\', folder)
     file = strcat(basedir,'/', name, '-OUTPUT.txt');
 end 
 

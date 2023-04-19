@@ -1,5 +1,5 @@
 %--------------------------------------------------------------------------
-% Evaluates the Cauchy stress tensor for material type 1.
+% Evaluates the Cauchy stress tensor for material type 1 (3D NeoHooke).
 %--------------------------------------------------------------------------
 function Cauchy = stress1(kinematics,properties,cons)
 
